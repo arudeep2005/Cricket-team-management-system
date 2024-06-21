@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Match Details</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/themes/base/jquery-ui.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            background-image: url({{ url_for('static', filename='Background.jpg') }});
+            background-color: whitesmoke; /* Slightly darker base color for blending */
+            background-blend-mode: overlay; /* Use overlay to maintain some image lightness */
+            background-size: cover; /* Ensure the background covers the entire area */
+            background-position: center; /* Center the background image */
+            background-attachment: fixed; /* Keep the background fixed during scrolling */
+        }
+        .match-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            margin: 20px;
+        }
+        .team-logo {
+            width: 150px;
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+        .team-logo:hover {
+            transform: scale(1.1);
+        }
+        .versus {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 0 50px;
+        }
+        .team-score {
+            text-align: center;
+            margin-top: 5px;
+            font-size: 18px;
+        }
+        .tabs {
+            margin-top: 20px;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .ui-tabs .ui-tabs-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 0;
+            list-style: none;
+        }
+        .ui-tabs .ui-tabs-nav li {
+            width: 50%;
+            text-align: center;
+        }
+        .ui-tabs .ui-tabs-nav li a {
+            display: block;
+            padding: 0.5em 1em;
+            text-decoration: none;
+            color: #000;
+        }
+        .ui-tabs .ui-tabs-nav .ui-tabs-active a {
+            font-weight: bold;
+            background-color: #f2f2f2;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .player-image {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .player-row {
+            background-color: #fff;
+            border-radius: 15px;
+            margin-bottom: 5px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        .player-row:hover {
+            background-color: #f0f0f0;
+            transform: scale(1.02);
+            cursor: pointer;
+        }
+        .winner-box {
+            display: inline-block; /* Makes the div only as wide as its content */
+            padding: 10px 20px;
+            background-color: #e6e6e6; /* Light grey background */
+            border-radius: 20px; /* Curvy ends */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+            margin: 20px; /* Margin for spacing */
+            text-align: center; /* Text inside the box is centered */
+        }
+        .centered-container {
+            text-align: center; /* Centers the inline-block child */
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+        $( function() {
+            $("#tabs").tabs();
+            $(".team-logo").on('click', function() {
+                var teamName = $(this).attr('data-team');
+                window.location.href = '/frontpagereset/teams/' + teamName;
+            });
+            $(".player-row").on('click', function() {
+                var playerId = $(this).attr('data-player-id');
+                window.location.href = '/frontpagereset/players/player' + playerId;
+            });
+        } );
+    </script>
+</head>
+<body>
+    <h1 style="text-align: center;">Match Details for Match ID: {{ match_id }}</h1>
+    <div class="centered-container">
+        <div class="winner-box">
+            <h2>Winner: {{ winner }}</h2>
+            <!-- Display the winning margin or a tie message -->
+            <h3>
+                {% if winner == "Tie" %}
+                    Match Tied
+                {% else %}
+                    {{ winner }} won by {{ team1_runs - team2_runs if team1_runs>=team2_runs else team2_runs - team1_runs}} runs
+                {% endif %}
+            </h3>
+        </div>
+    </div>
+    
+    <div class="match-header">
+        <div>
+            <img src="{{ url_for('static', filename='assets/logo/' + teama + '.webp') }}" alt="{{ teama }} Logo" class="team-logo" data-team="{{ teama }}">
+            <div class="team-score">{{ teama }}: {{ team1_runs }}/{{ team1_wickets }}</div>
+        </div>
+        <div class="versus">VS</div>
+        <div>
+            <img src="{{ url_for('static', filename='assets/logo/' + teamb + '.webp') }}" alt="{{ teamb }} Logo" class="team-logo" data-team="{{ teamb }}">
+            <div class="team-score">{{ teamb }}: {{ team2_runs }}/{{ team2_wickets }}</div>
+        </div>
+    </div>
+
+    <div id="tabs" class="tabs">
+        <ul class="ui-tabs-nav">
+            <li class="ui-tabs-tab"><a href="#tabs-1">{{ teama }}</a></li>
+            <li class="ui-tabs-tab"><a href="#tabs-2">{{ teamb }}</a></li>
+        </ul>
+        <div id="tabs-1" class="tab-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Player Image</th>
+                        <th>Player Name</th>
+                        <th>Runs Scored</th>
+                        <th>Balls Faced</th>
+                        <th>Strike Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for detail in match_details[:11] %}
+                        <tr class="player-row" data-player-id="{{ detail['PlayerID'] }}">
+                            <td><img src="{{ url_for('static', filename='assets/PlayerImages/Images/' + detail['PlayerName'] + '.webp') }}" alt="{{ detail['PlayerName'] }}" class="player-image"></td>
+                            <td>{{ detail['PlayerName'] }}</td>
+                            <td>{{ detail['RunsScored'] }}</td>
+                            <td>{{ detail['BallsFaced'] }}</td>
+                            <td>{{ (detail['RunsScored'] / detail['BallsFaced'] * 100) | round(2) if detail['BallsFaced'] > 0 else "--" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <h3>Bowling </h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Player Image</th>
+                        <th>Player Name</th>
+                        <th>Overs</th>
+                        <th>Wickets Taken</th>
+                        
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for detail in match_details[11:22] %}
+                        {% if detail['BallsBowled'] > 0 %}
+                            <tr class="player-row" data-player-id="{{ detail['PlayerID'] }}">
+                                <td><img src="{{ url_for('static', filename='assets/PlayerImages/Images/' + detail['PlayerName'] + '.webp') }}" alt="{{ detail['PlayerName'] }}" class="player-image"></td>
+                                <td>{{ detail['PlayerName'] }}</td>
+                                <td>{{ (detail['BallsBowled'] // 6) + (detail['BallsBowled'] % 6) / 10 }}</td>
+                                <td>{{ detail['WicketsTaken'] }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div id="tabs-2" class="tab-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Player Image</th>
+                        <th>Player Name</th>
+                        <th>Runs Scored</th>
+                        <th>Balls Faced</th>
+                        <th>Strike Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for detail in match_details[11:22] %}
+                        <tr class="player-row" data-player-id="{{ detail['PlayerID'] }}">
+                            <td><img src="{{ url_for('static', filename='assets/PlayerImages/Images/' + detail['PlayerName'] + '.webp') }}" alt="{{ detail['PlayerName'] }}" class="player-image"></td>
+                            <td>{{ detail['PlayerName'] }}</td>
+                            <td>{{ detail['RunsScored'] }}</td>
+                            <td>{{ detail['BallsFaced'] }}</td>
+                            <td>{{ (detail['RunsScored'] / detail['BallsFaced'] * 100) | round(2) if detail['BallsFaced'] > 0 else "--" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <h3>Bowling </h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Player Image</th>
+                        <th>Player Name</th>
+                        <th>Overs</th>
+                        <th>Wickets Taken</th>
+                        
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for detail in match_details[:11] %}
+                        {% if detail['BallsBowled'] > 0 %}
+                            <tr class="player-row" data-player-id="{{ detail['PlayerID'] }}">
+                                <td><img src="{{ url_for('static', filename='assets/PlayerImages/Images/' + detail['PlayerName'] + '.webp') }}" alt="{{ detail['PlayerName'] }}" class="player-image"></td>
+                                <td>{{ detail['PlayerName'] }}</td>
+                                <td>{{ (detail['BallsBowled'] // 6) + (detail['BallsBowled'] % 6) / 10 }}</td>
+                                <td>{{ detail['WicketsTaken'] }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</body>
+</html>

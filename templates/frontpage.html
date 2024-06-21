@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cricket Premier League</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-image: url({{ url_for('static', filename='Background.jpg') }});
+        background-color: #e8e8e8; /* Slightly darker base color for blending */
+        background-blend-mode: overlay; /* Use overlay to maintain some image lightness */
+        background-size: cover; /* Ensure the background covers the entire area */
+        background-position: center; /* Center the background image */
+        background-attachment: fixed; /* Keep the background fixed during scrolling */
+    }
+
+    #topbar {
+        background-color: #000; /* Black background for the entire top bar */
+        text-align: center;
+        padding: 10px 0; /* Reduced padding */
+        position: fixed; /* Fixed position */
+        top: 0;
+        width: 100%; /* Full width */
+        z-index: 10; /* Above other content */
+        color: #fff; /* White text */
+    }
+
+    #topbar h1 {
+        margin: 0; /* Remove default margin */
+        padding-bottom: 10px; /* Space between the title and the tabs */
+    }
+
+    #topbar a {
+        display: inline-block;
+        color: #fff;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+        font-size: 18px;
+        cursor: pointer;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    #topbar a:hover {
+        background-color: #333; /* Dark grey for hover effect */
+        color: #ddd; /* Light grey text color on hover */
+    }
+
+    #content {
+    padding: 20px;
+    max-width: 800px;
+    margin: 100px auto 20px auto; /* Increase top margin to push the content down */
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    position: relative; /* Needed for proper stacking context */
+    /* Rest of your styles... */
+}
+    .hidden {
+        display: none;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        cursor: pointer; /* Make it look clickable */
+    }
+    tr:hover {
+        background-color: #3064d4; /* Darker blue color on hover */
+        color: #e2e2e2; /* Lighter text color on hover */
+    }
+    .team-logo, .player-image {
+        width: 30px; /* Smaller size for the table */
+        height: 30px; /* Square dimensions for a perfect circle */
+        border-radius: 50%; /* Circular shape */
+        object-fit: cover; /* Ensures the image covers the area without stretching */
+    }
+    .players-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Adjust the minmax values as needed */
+    gap: 20px; /* Adjust the gap size as needed */
+    padding: 20px;
+}
+
+.player-card {
+    background: #ffffff;
+    border: 1px solid #dddddd;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.player-card:hover {
+    transform: translateY(-5px);
+}
+
+.player-photo {
+    width: 100%; /* Ensures the image fills the card width */
+    height: 150px; /* Fixed height for uniformity */
+    object-fit: cover; /* Ensures the image covers the area, cropping if necessary */
+    border-radius: 10px; /* Optional, for rounded corners at the top of the image */
+}
+
+.player-info {
+    padding: 8px;
+    text-align: center;
+}
+
+.player-name {
+    display: block;
+    font-weight: bold;
+    color: #333;
+    margin-top: 8px;
+}
+
+.matches-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Create two columns */
+    gap: 20px; /* Adjust the gap size as needed */
+    padding: 20px;
+}
+
+.match-card {
+    background: #ffffff;
+    border: 1px solid #dddddd;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    transition: transform 0.3s ease;
+}
+
+.match-card:hover {
+    transform: translateY(-5px);
+}
+.match-card .team-logo .player-image {
+    width: 30px; /* Adjust the size as needed */
+    height: auto;
+    display: block;
+    margin: 0 auto 10px; /* Center the logo and add some space below */
+}
+.match-team {
+    font-weight: bold;
+    color: #333;
+    margin: 0 10px;
+}
+
+.match-versus {
+    color: #4285f4; /* Use the blue color to keep the style consistent */
+    font-weight: bold;
+    margin: 0 5px;
+}
+
+</style>
+</head>
+<body>
+
+
+    
+
+
+<div id="topbar">
+    <h1>Cricket Premier League</h1>
+    <a href="/frontpagereset/points" class="topbar-link">Points table</a>
+    <a href="/frontpagereset/tournaments" class="topbar-link">Tournament</a>
+    <a href="/frontpagereset/matches" class="topbar-link">Matches</a>
+    <a href="#" onclick="showContent('players')">Players</a>
+</div>
+    
+
+
+<div id="content">
+    <div id="teams" class="tab-content hidden">
+        <table>
+            <tr>
+                <th>Rank</th>
+                <th>Logo</th>
+                <th>Team Name</th>
+                <th>Matches Played</th>
+                <th>Matches Won</th>
+                <th>Last 5 Matches</th>
+            </tr>
+            {% for team_name, logo_path, matches_played, matches_won, last5 in teams_data %}
+            <tr onclick="window.location='/frontpagereset/teams/{{ team_name }}';">
+                <td>{{ loop.index }}</td>
+                <td><img src="{{ url_for('static', filename='assets/logo/' ~ team_name ~ '.webp') }}" alt="{{ team_name }} Logo" class="team-logo"></td>
+                <td>{{ team_name }}</td>
+                <td>{{ matches_played }}</td>
+                <td>{{ matches_won }}</td>
+                <td>{{ last5 }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div id="tournament" class="tab-content hidden">
+        <h2>Tournament Stats</h2>
+        <div>
+            <h3>Top Run Scorers</h3>
+            <table>
+                <tr>
+                    <th>Player</th>
+                    <th>Team</th>
+                    <th>Runs</th>
+                </tr>
+                {% for player in runs %}
+                <tr onclick="window.location='/frontpagereset/players/player{{ player[0] }}';">
+                    <td>
+                        <img src="{{ url_for('static', filename='assets/PlayerImages/Images/' ~ player[1] ~ '.webp') }}" alt="{{ player[1] }}'s Picture" class="player-image" style="vertical-align: middle; width: 30px; height: 30px; border-radius: 50%;">
+                        {{ player[1] }}
+                    </td>
+                    <td>
+                        <img src="{{ url_for('static', filename='assets/logo/' ~ player[3] ~ '.webp') }}" alt="{{ player[2] }} Logo" class="team-logo" style="vertical-align: middle; width: 30px; height: 30px; border-radius: 50%;">
+                        {{ player[3] }}
+                    </td>
+                    <td>{{ player[5] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div style="margin-top: 20px;">
+            <h3>Top Wicket Takers</h3>
+            <table>
+                <tr>
+                    <th>Player</th>
+                    <th>Team</th>
+                    <th>Wickets</th>
+                </tr>
+                {% for player in wickets %}
+                <tr onclick="window.location='/frontpagereset/players/player{{ player[0] }}';">
+                    <td>
+                        <img src="{{ url_for('static', filename='assets/PlayerImages/Images/' ~ player[1] ~ '.webp') }}" alt="{{ player[1] }}'s Picture" class="player-image" style="vertical-align: middle; width: 30px; height: 30px; border-radius: 50%;">
+                        {{ player[1] }}
+                    </td>
+                    <td>
+                        <img src="{{ url_for('static', filename='assets/logo/' ~ player[3] ~ '.webp') }}" alt="{{ player[2] }} Logo" class="team-logo" style="vertical-align: middle; width: 30px; height: 30px; border-radius: 50%;">
+                        {{ player[3] }}
+                    </td>
+                    <td>{{ player[5] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    
+    <!-- <div id="matches" class="tab-content hidden">
+        <h2>Matches</h2>
+        <table>
+            <tr>
+                <th>Team A</th>
+                <th>Team B</th>
+            </tr>
+            {% for match in match_details %}
+            <tr onclick="redirectToMatchDetails('{{ match[0] }}')">
+                <td>{{ match[1] }}</td>
+                <td>{{ match[2] }}</td>
+            </tr>
+            
+            {% endfor %}
+        </table>
+    </div> -->
+    <div id="matches" class="tab-content hidden">
+        <h2>Matches</h2>
+        <div class="matches-grid">
+            {% for match in match_details %}
+            <div class="match-card" onclick="redirectToMatchDetails('{{ match[0] }}')">
+                <div class="match-team">
+                    <img src="{{ url_for('static', filename='assets/logo/' ~ match[1] ~ '.webp') }}" alt="Team A Logo" class="team-logo">
+                    <span>{{ match[1] }}</span>
+                </div>
+                <div class="match-versus">vs</div>
+                <div class="match-team">
+                    <img src="{{ url_for('static', filename='assets/logo/' ~ match[2] ~ '.webp') }}" alt="Team B Logo" class="team-logo">
+                    <span>{{ match[2] }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div id="players" class="tab-content hidden">
+        <h2>Players</h2>
+        <div class="players-grid">
+            {% for player_id, player_name, picture_path in players_data %}
+            <div class="player-card" onclick="window.location='/frontpagereset/players/player{{ player_id }}';">
+                <img src="{{ url_for('static', filename=picture_path) }}" alt="{{ player_name }}" class="player-photo">
+                <div class="player-info">
+                    <span class="player-name">{{ player_name }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    
+</div>
+
+<script>
+    function showContent(tabName) {
+        var i;
+        var tabContent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabContent.length; i++) {
+            tabContent[i].classList.add('hidden');
+        }
+        document.getElementById(tabName).classList.remove('hidden');
+    }
+
+    function redirectToMatchDetails(matchID) {
+    window.location = `/frontpagereset/matches/MD${matchID}`;
+    }
+
+    
+</script>
+
+</body>
+</html>

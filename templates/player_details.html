@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Player Details</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f1f1f1;
+        background-image: url({{ url_for('static', filename='Background.jpg') }});
+        background-color: #e8e8e8; /* Slightly darker base color for blending */
+        background-blend-mode: overlay; /* Use overlay to maintain some image lightness */
+        background-size: cover; /* Ensure the background covers the entire area */
+        background-position: center; /* Center the background image */
+        background-attachment: fixed; /* Keep the background fixed during scrolling */
+    }
+    
+    .player-container {
+        display: flex;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        margin: 20px;
+        align-items: center;
+    }
+    
+    .player-photo {
+        border-radius: 50%;
+        height: 150px;
+        width: 150px;
+        object-fit: cover;
+        margin-right: 20px;
+    }
+    
+    .player-name {
+        font-size: 24px;
+        font-weight: bold;
+    }
+    
+    .team-name {
+        color: grey;
+        font-size: 20px;
+    }
+    
+    .personal-details {
+        background-color: #f9f9f9;
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 20px;
+        width: fit-content;
+    }
+    
+    .personal-details table {
+        border-collapse: collapse;
+        width: 300px;
+    }
+    
+    .personal-details td,
+    .personal-details th {
+        padding: 10px;
+        text-align: left;
+    }
+    
+    .personal-details th {
+        background-color: grey;
+        color: white;
+        border-radius: 10px 10px 0 0;
+    }
+    
+    .personal-details tr:last-child td {
+        border: none;
+    }
+    
+    .player-bio {
+        margin-top: 20px;
+    }
+    
+    .match-details {
+        margin-top: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        padding: 15px;
+    }
+    
+    .match-details table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .match-details th {
+        background-color: grey;
+        color: white;
+        padding: 10px;
+        text-align: left;
+    }
+    
+    .match-details td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .match-details tr:last-child td {
+        border-bottom: none;
+    }
+</style>
+</head>
+<body>
+
+<div class="player-container">
+    <img src="{{ url_for('static', filename=player_detail[10]) }}" alt="{{ player_detail[1] }}" class="player-photo">
+    <div>
+        <div class="player-name">{{ player_detail[1]}}</div>
+        <div class="team-name" onclick="window.location='/frontpagereset/teams/{{ teamname }}';">{{ teamname }}</div>
+    </div>
+</div>
+
+<div class="personal-details">
+    <table>
+        <tr>
+            <th colspan="2">Personal Information</th>
+        </tr>
+        <tr>
+            <td>Age</td>
+            <td>{{ player_detail[2] }}</td>
+        </tr>
+        <tr>
+            <td>Hand</td>
+            <td>{{ hand }}</td>
+        </tr>
+    </table>
+</div>
+
+
+<div class="match-details">
+    <!-- Batting Statistics Table -->
+    <h3>Batting Stats</h3>
+    <table>
+        <tr>
+            <th>Matches Played</th>
+            <th>Runs Scored</th>
+            <th>Balls Faced</th>
+            <th>Strike Rate</th>
+        </tr>
+        <tr>
+            <td>{{ player_detail[5] }}</td>
+            <td>{{ player_detail[6] }}</td>
+            <td>{{ player_detail[7] }}</td>
+            <td>{{ (player_detail[6] / player_detail[7] * 100) | round(2) if player_detail[7] > 0 else "--" }}</td>
+        </tr>
+    </table>
+</div>
+
+<div class="match-details">
+    <!-- Bowling Statistics Table -->
+    <h3>Bowling Stats</h3>
+    <table>
+        <tr>
+            <th>Matches Played</th>
+            <th>Balls Bowled</th>
+            <th>Wickets Taken</th>
+            <th>Balls per wicket</th>
+        </tr>
+        <tr>
+            <td>{{ player_detail[5] }}</td>
+            <td>{{ player_detail[8] }}</td>
+            <td>{{ player_detail[9] }}</td>
+            <td>{{ (player_detail[8] / player_detail[9]) | round(0) if player_detail[9] > 0 else "--" }}</td>
+        </tr>
+    </table>
+</div>
+<br>
+<div class="match-details">
+    <h3>Player Bio</h3>
+    <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris.
+    </p>
+    <p>
+        Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis risus a elit. Etiam tempor. Ut ullamcorper, ligula eu tempor congue, eros est euismod turpis, id tincidunt sapien risus a quam. Maecenas fermentum consequat mi. Donec fermentum. Pellentesque malesuada nulla a mi. Duis sapien sem, aliquet nec, commodo eget, consequat quis, neque. Aliquam faucibus, elit ut dictum aliquet, felis nisl adipiscing sapien, sed malesuada diam lacus eget erat. Cras mollis scelerisque nunc. Nullam arcu. Aliquam consequat. Curabitur augue lorem, dapibus quis, laoreet et, pretium ac, nisi. Aenean magna nisl, mollis quis, molestie eu, feugiat in, orci. In hac habitasse platea dictumst.
+    </p>
+</div>
+</body>
+</html>
